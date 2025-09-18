@@ -28,8 +28,8 @@ class DailyLedger(models.Model):
     @property
     def budget_usage_percentage(self):
         if self.budget_allocated > 0:
-            return (self.total_expenses / self.budget_allocated) * 100
-        return 0
+            return (self.total_expenses / self.budget_allocated) * Decimal('100')
+        return Decimal('0.00')
 
     @property
     def status(self):

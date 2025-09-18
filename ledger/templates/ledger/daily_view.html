@@ -21,6 +21,30 @@
         .status.Balanced { background-color: #28a745; }
         .status.Underspent { background-color: #17a2b8; }
         .status.Overspent { background-color: #dc3545; }
+        /* ADD THESE STYLES INSIDE THE <style> TAG */
+.savings-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+.button-group {
+    display: flex;
+    gap: 5px;
+}
+.add-btn {
+    background-color: #28a745; /* Green */
+}
+.add-btn:hover {
+    background-color: #218838;
+}
+.withdraw-btn {
+    background-color: #ffc107; /* Amber */
+    color: #111;
+}
+.withdraw-btn:hover {
+    background-color: #e0a800;
+}
     </style>
 </head>
 <body>
@@ -51,6 +75,17 @@
         </div>
         <div class="savings">
             <h3>TOTAL SAVINGS ACCOUNT: {{ savings_account.balance }} pesos</h3>
+        </div>
+        <div class="update-savings">
+        <h4>Manage Savings</h4>
+        <form action="{% url 'update_savings' %}" method="POST" class="savings-form">
+        {% csrf_token %}
+        <input type="number" name="amount" step="0.01" placeholder="Amount to add/withdraw" required>
+        <div class="button-group">
+            <button type="submit" name="action" value="add" class="add-btn">Add to Savings</button>
+            <button type="submit" name="action" value="withdraw" class="withdraw-btn">Withdraw</button>
+        </div>
+    </form>
         </div>
         <div class="add-expense">
             <h3>Add New Expense</h3>
