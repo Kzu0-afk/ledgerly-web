@@ -1,101 +1,160 @@
-<!-- ledger/templates/ledger/daily_view.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-g">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ledgerly - Daily Expenses</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; background-color: #f9f9f9; color: #333; }
-        .container { background-color: white; border: 1px solid #ddd; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .header, .summary, .savings { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-        h1, h2, h3 { color: #111; }
-        ul { list-style-type: none; padding: 0; }
-        li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-        li:last-child { border-bottom: none; }
-        form { display: flex; gap: 10px; margin-top: 20px; }
-        input[type="text"], input[type="number"] { padding: 10px; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #0056b3; }
-        .status { font-weight: bold; padding: 3px 8px; border-radius: 4px; color: white; }
-        .status.Balanced { background-color: #28a745; }
-        .status.Underspent { background-color: #17a2b8; }
-        .status.Overspent { background-color: #dc3545; }
-        /* ADD THESE STYLES INSIDE THE <style> TAG */
-.savings-form {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-.button-group {
-    display: flex;
-    gap: 5px;
-}
-.add-btn {
-    background-color: #28a745; /* Green */
-}
-.add-btn:hover {
-    background-color: #218838;
-}
-.withdraw-btn {
-    background-color: #ffc107; /* Amber */
-    color: #111;
-}
-.withdraw-btn:hover {
-    background-color: #e0a800;
-}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Ledgerly Web</h2>
-            <p><strong>Date:</strong> {{ today_long }}</p>
-            <p><strong>Today's Budget:</strong> {{ ledger.budget_allocated }} pesos</p>
-        </div>
-        <div class="expenses-list">
-            <h3>EXPENSES:</h3>
-            <ul>
-                {% for expense in expenses %}
-                <li><span>- {{ expense.description }}</span><span>{{ expense.price }} pesos</span></li>
-                {% empty %}
-                <li>No expenses recorded today.</li>
-                {% endfor %}
-            </ul>
-            <hr>
-            <ul>
-                <li><strong>TOTAL:</strong><strong>{{ ledger.total_expenses }} Pesos ({{ ledger.budget_usage_percentage|floatformat:0 }}%)</strong></li>
-            </ul>
-            <p><strong>STATUS:</strong> <span class="status {{ ledger.status }}">{{ ledger.status }}</span></p>
-        </div>
-        <div class="summary">
-            <h3>Daily Summary</h3>
-            <p>BUDGET - EXPENSES = SAVINGS FOR THE DAY: <strong>{{ ledger.daily_savings }} pesos</strong></p>
-        </div>
-        <div class="savings">
-            <h3>TOTAL SAVINGS ACCOUNT: {{ savings_account.balance }} pesos</h3>
-        </div>
-        <div class="update-savings">
-        <h4>Manage Savings</h4>
-        <form action="{% url 'update_savings' %}" method="POST" class="savings-form">
-        {% csrf_token %}
-        <input type="number" name="amount" step="0.01" placeholder="Amount to add/withdraw" required>
-        <div class="button-group">
-            <button type="submit" name="action" value="add" class="add-btn">Add to Savings</button>
-            <button type="submit" name="action" value="withdraw" class="withdraw-btn">Withdraw</button>
-        </div>
-    </form>
-        </div>
-        <div class="add-expense">
-            <h3>Add New Expense</h3>
-            <form method="POST">
-                {% csrf_token %}
-                <input type="text" name="description" placeholder="Expense Description" required>
-                <input type="number" name="price" step="0.01" placeholder="Price" required>
-                <button type="submit">Add Expense</button>
-            </form>
-        </div>
+{% extends 'base.html' %}
+
+{% block title %}Ledgerly - {{ current_date|date:"F j, Y" }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+
+        <!-- Header and Navigation -->
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-8">
+            <div class="text-center lg:text-left mb-4 lg:mb-0">
+                <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">
+                    Ledgerly
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400">Smart Daily Budget Tracking</p>
+            </div>
+            <nav class="flex items-center gap-3">
+                <a href="{% url 'daily_view_date' previous_day.year previous_day.month previous_day.day %}" 
+                   class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200">
+                    <i class="fas fa-chevron-left text-sm"></i> 
+                    <span>Previous</span>
+                </a>
+                <a href="{% url 'calendar_view_default' %}" 
+                   class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <i class="fas fa-calendar-alt mr-1"></i>Calendar
+                </a>
+                <a href="{% url 'daily_view_date' next_day.year next_day.month next_day.day %}" 
+                   class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200">
+                    <span>Next</span>
+                    <i class="fas fa-chevron-right text-sm"></i>
+                </a>
+            </nav>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column: Expenses and Summary -->
+            <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+
+                <!-- Date and Budget Section -->
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{{ current_date|date:"l, F j, Y" }}</h2>
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Effective Daily Budget</p>
+                            <p class="text-3xl font-bold text-green-600 dark:text-green-400">
+                                ₱{{ ledger.effective_budget|floatformat:2 }}
+                            </p>
+                        </div>
+                        <form action="{% url 'update_budget' ledger.date.year ledger.date.month ledger.date.day %}" method="POST" class="flex items-center gap-2">
+                            {% csrf_token %}
+                            <div>
+                                <label class="text-xs text-gray-500 dark:text-gray-400">Base Budget</label>
+                                <input type="number" name="new_base_budget" step="0.01" value="{{ ledger.base_budget }}" 
+                                       class="block px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg w-24 focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100" 
+                                       required>
+                            </div>
+                            <button type="submit" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors duration-200">
+                                Update
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Expenses List -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Today's Expenses</h3>
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                        {% for expense in expenses %}
+                        <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <span class="text-gray-800 dark:text-gray-200">{{ expense.description }}</span>
+                            <span class="font-semibold text-red-600 dark:text-red-400">-₱{{ expense.price }}</span>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-6">
+                            <p class="text-gray-500 dark:text-gray-400">No expenses recorded today.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Totals and Status -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Total Spent:</span>
+                        <span class="font-bold text-red-600 dark:text-red-400">₱{{ ledger.total_expenses }} ({{ ledger.budget_usage_percentage|floatformat:0 }}%)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Daily Savings:</span>
+                        <span class="text-lg font-bold {% if ledger.daily_savings >= 0 %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                            ₱{{ ledger.daily_savings }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-300 dark:border-gray-500">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Status:</span>
+                        {% if ledger.status == "Balanced" %}
+                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-medium px-3 py-1 rounded-full">{{ ledger.status }}</span>
+                        {% elif ledger.status == "Underspent" %}
+                            <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium px-3 py-1 rounded-full">{{ ledger.status }}</span>
+                        {% else %}
+                            <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-sm font-medium px-3 py-1 rounded-full">{{ ledger.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Savings and Actions -->
+            <div class="space-y-6">
+                <!-- Total Savings Card -->
+                <div class="bg-green-50 dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-green-200 dark:border-gray-700 text-center">
+                    <h3 class="text-sm font-semibold text-green-700 dark:text-green-300 uppercase mb-2">Total Savings Account</h3>
+                    <p class="text-4xl font-bold text-green-600 dark:text-green-400 mb-4">
+                        ₱{{ savings_account.balance|floatformat:2 }}
+                    </p>
+                    <form action="{% url 'update_savings' %}" method="POST" class="space-y-3">
+                        {% csrf_token %}
+                        <input type="number" name="amount" step="0.01" placeholder="Enter amount" 
+                               class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-gray-100 text-center" required>
+                        <div class="flex gap-2">
+                            <button type="submit" name="action" value="add" 
+                                    class="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded-lg transition-colors duration-200">
+                                <i class="fas fa-plus mr-1"></i>Add
+                            </button>
+                            <button type="submit" name="action" value="withdraw" 
+                                    class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 rounded-lg transition-colors duration-200">
+                                <i class="fas fa-minus mr-1"></i>Withdraw
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Add Expense Card -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Add New Expense</h3>
+                    <form method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                            <input type="text" name="description" placeholder="What did you buy?" 
+                                   class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500 dark:text-gray-400">₱</span>
+                                <input type="number" name="price" step="0.01" placeholder="0.00" 
+                                       class="w-full pl-8 pr-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100" required>
+                            </div>
+                        </div>
+                        <button type="submit" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-plus mr-1"></i>Add Expense
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
