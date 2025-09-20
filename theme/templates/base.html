@@ -1,0 +1,112 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <title>{% block title %}Ledgerly{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            @apply bg-gray-100 dark:bg-gray-800;
+        }
+        ::-webkit-scrollbar-thumb {
+            @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            @apply bg-gray-500 dark:bg-gray-500;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen">
+    <!-- Theme Toggle Button -->
+    <div class="fixed top-4 right-4 z-50">
+        <button 
+            onclick="toggleTheme()" 
+            class="p-3 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            title="Toggle theme"
+        >
+            <i class="fas fa-sun text-yellow-500"></i>
+            <i class="fas fa-moon text-blue-400" style="display: none;"></i>
+        </button>
+    </div>
+
+    <div class="container mx-auto">
+        {% block content %}
+        <section class="flex items-center justify-center h-screen">
+            <h1 class="text-5xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Django + Tailwind = ❤️</h1>
+        </section>
+        {% endblock %}
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            // Update button icons
+            updateThemeIcon();
+        }
+
+        // Update theme toggle button icon
+        function updateThemeIcon() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            const sunIcon = document.querySelector('.fas.fa-sun');
+            const moonIcon = document.querySelector('.fas.fa-moon');
+            
+            if (isDark) {
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'block';
+            } else {
+                if (sunIcon) sunIcon.style.display = 'block';
+                if (moonIcon) moonIcon.style.display = 'none';
+            }
+        }
+
+        // Initialize theme on page load
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                // Default to dark mode as requested
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            // Update icons after theme is set
+            setTimeout(updateThemeIcon, 50);
+        }
+
+        // Initialize theme immediately to prevent flash
+        initTheme();
+        
+        // Also initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            updateThemeIcon();
+        });
+    </script>
+</body>
+</html>
