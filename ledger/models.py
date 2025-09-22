@@ -1,10 +1,13 @@
 # ledger/models.py
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 from decimal import Decimal
+import uuid
 
 class SavingsAccount(models.Model):
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('38000.00'))
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='savings_account', null=True, blank=True)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -13,8 +16,9 @@ class SavingsAccount(models.Model):
 # ledger/models.py
 
 class DailyLedger(models.Model):
-    date = models.DateField(primary_key=True, default=timezone.now)
-    base_budget = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('100.00'))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='daily_ledgers', null=True, blank=True)
+    date = models.DateField(default=timezone.now)
+    base_budget = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
     def __str__(self):
         return self.date.strftime('%Y-%m-%d')
@@ -25,28 +29,12 @@ class DailyLedger(models.Model):
 
     @property
     def total_rollover(self):
-        """Sum of previous days' savings (base minus expenses),
-        only up to today, never using future days.
-        Uses Decimal arithmetic throughout to avoid float mixing.
-        """
-        today = timezone.now().date()
-        cutoff_date = self.date if self.date <= today else today
-        previous_ledgers = DailyLedger.objects.filter(date__lt=cutoff_date)
-
-        total_saved: Decimal = Decimal('0.00')
-        for ledger in previous_ledgers:
-            expenses_total = ledger.expenses.aggregate(total=models.Sum('price'))['total'] or Decimal('0.00')
-            total_saved += (ledger.base_budget - expenses_total)
-        return total_saved
+        """Rollover disabled in overrule mode. Always zero."""
+        return Decimal('0.00')
 
     @property
     def effective_budget(self):
-        """Budget for the day including rollover from past days only.
-        Future days do not anticipate rollover.
-        """
-        today = timezone.now().date()
-        if self.date <= today:
-            return self.base_budget + self.total_rollover
+        """Effective budget equals today's base budget in overrule mode."""
         return self.base_budget
 
     @property
@@ -71,6 +59,12 @@ class DailyLedger(models.Model):
             return "Balanced"
         else:
             return "Overspent"
+    
+    class Meta:
+        unique_together = (('user', 'date'),)
+        indexes = [
+            models.Index(fields=['user', 'date']),
+        ]
         
 class Expense(models.Model):
     daily_ledger = models.ForeignKey(DailyLedger, on_delete=models.CASCADE, related_name='expenses')
@@ -80,3 +74,13 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.description} - {self.price}"
+
+
+class UserProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"

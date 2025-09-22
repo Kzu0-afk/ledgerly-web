@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ledger',
+    'ledger.apps.LedgerConfig',
     'tailwind',
     'theme',
 ]
@@ -130,3 +130,8 @@ INTERNAL_IIPS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TAILWIND_APP_NAME = 'theme'
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+
+# Authentication
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'daily_view_today'
+LOGOUT_REDIRECT_URL = 'login'
