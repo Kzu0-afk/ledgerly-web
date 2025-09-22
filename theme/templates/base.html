@@ -38,12 +38,34 @@
         </button>
     </div>
 
-    <div class="container mx-auto">
-        {% block content %}
-        <section class="flex items-center justify-center h-screen">
-            <h1 class="text-5xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Django + Tailwind = ❤️</h1>
-        </section>
-        {% endblock %}
+    <div class="container mx-auto px-4">
+        {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+                <div class="mb-2 px-4 py-2 rounded {{ message.tags|default:'' }} {% if 'error' in message.tags %}bg-red-600 text-white{% elif 'success' in message.tags %}bg-green-600 text-white{% else %}bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <nav class="flex items-center justify-between py-4">
+            <div>
+                <a href="/" class="font-semibold">Ledgerly</a>
+            </div>
+            <div class="flex items-center gap-3">
+                {% if request.user.is_authenticated %}
+                    <span class="text-sm">{{ request.user.username }}</span>
+                    <form action="{% url 'logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">Login</a>
+                    <a href="{% url 'register' %}" class="px-3 py-1 rounded bg-blue-600 text-white">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+        {% block content %}{% endblock %}
     </div>
 
     <script>
