@@ -3,28 +3,31 @@
 {% block title %}Ledgerly - Calendar{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex items-center justify-center p-4">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-all duration-300 flex items-center justify-center p-4">
 
-    <div class="container bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 md:p-8 w-full max-w-5xl border border-gray-200 dark:border-gray-700">
+    <div class="container bg-white/70 dark:bg-gray-800/70 backdrop-blur-md shadow-2xl rounded-3xl p-6 md:p-8 w-full max-w-6xl border border-white/20 dark:border-gray-700/50 animate-slide-in-up">
         <!-- Calendar Header -->
-        <header class="flex justify-between items-center pb-6 mb-6 border-b border-gray-200 dark:border-gray-700">
+        <header class="flex justify-between items-center pb-8 mb-8 border-b border-gray-200/50 dark:border-gray-700/50">
             <a href="{{ prev_month_url }}" 
-               class="flex items-center justify-center w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-blue-500 text-gray-600 dark:text-gray-300 hover:text-white rounded-lg transition-colors duration-200" 
+               class="group flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-500 text-white rounded-xl shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl" 
                title="Previous Month">
-                <i class="fas fa-chevron-left"></i>
+                <i class="fas fa-chevron-left group-hover:-translate-x-0.5 transition-transform duration-200"></i>
             </a>
             
             <div class="text-center">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">
+                <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2 animate-pulse-soft">
                     {{ current_month_name }}
                 </h1>
-                <p class="text-gray-600 dark:text-gray-400 text-sm">Your Financial Journey</p>
+                <p class="text-gray-600 dark:text-gray-400 text-base font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-chart-line text-blue-500"></i>
+                    Your Financial Journey
+                </p>
             </div>
             
             <a href="{{ next_month_url }}" 
-               class="flex items-center justify-center w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-blue-500 text-gray-600 dark:text-gray-300 hover:text-white rounded-lg transition-colors duration-200" 
+               class="group flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-500 text-white rounded-xl shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl" 
                title="Next Month">
-                <i class="fas fa-chevron-right"></i>
+                <i class="fas fa-chevron-right group-hover:translate-x-0.5 transition-transform duration-200"></i>
             </a>
         </header>
 
@@ -42,32 +45,48 @@
         </div>
 
         <!-- Footer Link -->
-        <footer class="text-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <footer class="text-center mt-10 pt-8 border-t border-gray-200/50 dark:border-gray-700/50">
             <a href="{% url 'daily_view_today' %}" 
-               class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                <i class="fas fa-chart-line"></i>
+               class="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                <i class="fas fa-chart-line group-hover:rotate-12 transition-transform duration-200"></i>
                 Go to Today's Ledger
+                <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
             </a>
         </footer>
     </div>
 </div>
 
-<!-- Optimized Calendar Styling -->
+<!-- Enhanced Calendar Styling -->
 <style>
     .ledger-calendar {
         width: 100%;
         border-collapse: separate;
-        border-spacing: 0.5rem;
-        margin: 1rem 0;
+        border-spacing: 0.75rem;
+        margin: 2rem 0;
+        font-family: 'Inter', sans-serif;
     }
     
     .ledger-calendar th {
-        padding-bottom: 0.75rem;
+        padding-bottom: 1rem;
         font-size: 0.875rem;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         text-align: center;
+        letter-spacing: 0.05em;
         color: rgb(107 114 128);
+        position: relative;
+    }
+    
+    .ledger-calendar th::after {
+        content: '';
+        position: absolute;
+        bottom: 0.25rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1.5rem;
+        height: 2px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 1px;
     }
     
     .dark .ledger-calendar th {
@@ -76,37 +95,123 @@
     
     .ledger-calendar td {
         text-align: center;
+        position: relative;
     }
     
     .ledger-calendar td a {
         display: block;
         width: 100%;
-        height: 3rem;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        font-weight: 500;
-        font-size: 1rem;
-        transition: all 0.2s ease;
-        background-color: rgb(249 250 251);
+        height: 4rem;
+        padding: 1rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(249, 250, 251, 0.8) 100%);
         color: rgb(31 41 55);
-        border: 1px solid transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ledger-calendar td a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.6s ease;
+    }
+    
+    .ledger-calendar td a:hover::before {
+        left: 100%;
     }
     
     .dark .ledger-calendar td a {
-        background-color: rgb(55 65 81);
+        background: linear-gradient(135deg, rgba(55, 65, 81, 0.8) 0%, rgba(75, 85, 99, 0.8) 100%);
         color: rgb(229 231 235);
+        border: 1px solid rgba(75, 85, 99, 0.3);
     }
     
     .ledger-calendar td a:hover {
-        background-color: rgb(59 130 246);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: transparent;
+    }
+    
+    .dark .ledger-calendar td a:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
     }
     
     .ledger-calendar .noday {
         pointer-events: none;
         opacity: 0;
+    }
+    
+    /* Add today indicator */
+    .ledger-calendar .today a {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        box-shadow: 0 10px 20px -5px rgba(79, 172, 254, 0.4);
+        animation: pulse-today 2s infinite;
+    }
+    
+    @keyframes pulse-today {
+        0%, 100% {
+            box-shadow: 0 10px 20px -5px rgba(79, 172, 254, 0.4);
+        }
+        50% {
+            box-shadow: 0 15px 30px -5px rgba(79, 172, 254, 0.6);
+        }
+    }
+    
+    .ledger-calendar .today a:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: translateY(-4px) scale(1.05);
+    }
+    
+    /* Past days styling with strikethrough effect */
+    .ledger-calendar .past-day a {
+        position: relative;
+        opacity: 0.6;
+        background: linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(107, 114, 128, 0.3) 100%);
+        color: rgb(107, 114, 128);
+    }
+    
+    .dark .ledger-calendar .past-day a {
+        background: linear-gradient(135deg, rgba(75, 85, 99, 0.3) 0%, rgba(55, 65, 81, 0.3) 100%);
+        color: rgb(156, 163, 175);
+    }
+    
+    .ledger-calendar .past-day a::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 15%;
+        right: 15%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgb(107, 114, 128), transparent);
+        transform: translateY(-50%);
+        border-radius: 1px;
+    }
+    
+    .dark .ledger-calendar .past-day a::after {
+        background: linear-gradient(90deg, transparent, rgb(156, 163, 175), transparent);
+    }
+    
+    .ledger-calendar .past-day a:hover {
+        opacity: 0.8;
+        background: linear-gradient(135deg, rgba(156, 163, 175, 0.5) 0%, rgba(107, 114, 128, 0.5) 100%);
+        transform: translateY(-2px) scale(1.01);
+    }
+    
+    .dark .ledger-calendar .past-day a:hover {
+        background: linear-gradient(135deg, rgba(75, 85, 99, 0.5) 0%, rgba(55, 65, 81, 0.5) 100%);
     }
 </style>
 

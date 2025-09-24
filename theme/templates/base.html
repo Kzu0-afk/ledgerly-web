@@ -8,6 +8,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     {% tailwind_css %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* Custom scrollbar styling */
         ::-webkit-scrollbar {
@@ -22,46 +25,202 @@
         ::-webkit-scrollbar-thumb:hover {
             @apply bg-gray-500 dark:bg-gray-500;
         }
+        
+        /* Root variables for enhanced theming */
+        :root {
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-warning: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --shadow-elegant: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-elegant-dark: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Enhanced theme toggle */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-elegant);
+        }
+        
+        .theme-toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .theme-toggle.dark .theme-toggle-slider {
+            transform: translateX(30px);
+            background: #1f2937;
+            color: #fbbf24;
+        }
+        
+        .theme-toggle:not(.dark) .theme-toggle-slider {
+            color: #f59e0b;
+        }
+        
+        /* Glassmorphism effect */
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass-morphism {
+            background: rgba(17, 25, 40, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Enhanced animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse-soft {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+        
+        .animate-slide-in-up {
+            animation: slideInUp 0.5s ease-out;
+        }
+        
+        .animate-pulse-soft {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Enhanced gradient backgrounds */
+        .bg-gradient-primary {
+            background: var(--gradient-primary);
+        }
+        
+        .bg-gradient-secondary {
+            background: var(--gradient-secondary);
+        }
+        
+        .bg-gradient-success {
+            background: var(--gradient-success);
+        }
+        
+        /* Font family override */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        /* Enhanced custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(156, 163, 175, 0.1);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+        }
     </style>
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen">
-    <!-- Theme Toggle Button -->
-    <div class="fixed top-4 right-4 z-50">
-        <button 
-            onclick="toggleTheme()" 
-            class="p-3 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-            title="Toggle theme"
-        >
-            <i class="fas fa-sun text-yellow-500"></i>
-            <i class="fas fa-moon text-blue-400" style="display: none;"></i>
-        </button>
-    </div>
+    <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen overflow-x-auto overflow-y-auto">
+    <!-- Theme toggle removed per request -->
 
-    <div class="container mx-auto px-4">
+        <div class="container mx-auto px-4 max-w-7xl">
         {% if messages %}
-        <div class="mt-4">
+        <div class="mt-4 animate-slide-in-up">
             {% for message in messages %}
-                <div class="mb-2 px-4 py-2 rounded {{ message.tags|default:'' }} {% if 'error' in message.tags %}bg-red-600 text-white{% elif 'success' in message.tags %}bg-green-600 text-white{% else %}bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100{% endif %}">
-                    {{ message }}
+                <div class="mb-3 px-5 py-3 rounded-lg shadow-md {% if 'error' in message.tags %}bg-gradient-to-r from-red-500 to-red-600 text-white{% elif 'success' in message.tags %}bg-gradient-to-r from-green-500 to-green-600 text-white{% else %}bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700{% endif %}">
+                    <div class="flex items-center gap-2">
+                        {% if 'error' in message.tags %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% elif 'success' in message.tags %}
+                            <i class="fas fa-check-circle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                        {{ message }}
+                    </div>
                 </div>
             {% endfor %}
         </div>
         {% endif %}
-        <nav class="flex items-center justify-between py-4">
-            <div>
-                <a href="/" class="font-semibold">Ledgerly</a>
-            </div>
+        
+        <!-- Enhanced Navigation -->
+        <nav class="flex items-center justify-between py-6 animate-slide-in-up">
             <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fas fa-wallet text-white text-lg"></i>
+                </div>
+                <div>
+                    <a href="/" class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-purple-600 hover:to-blue-600 transition-all duration-300">
+                        Ledgerly
+                    </a>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Smart Budget Tracking</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
                 {% if request.user.is_authenticated %}
-                    <span class="text-sm">{{ request.user.username }}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <div class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ request.user.username }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Welcome back!</div>
+                        </div>
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-xs"></i>
+                        </div>
+                    </div>
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">Logout</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium transition-all duration-200 hover:scale-105">
+                            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                        </button>
                     </form>
                 {% else %}
-                    <a href="{% url 'login' %}" class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">Login</a>
-                    <a href="{% url 'register' %}" class="px-3 py-1 rounded bg-blue-600 text-white">Register</a>
+                    <div class="flex items-center gap-3">
+                        <a href="{% url 'login' %}" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium transition-all duration-200 hover:scale-105">
+                            Login
+                        </a>
+                        <a href="{% url 'register' %}" class="px-4 py-2 rounded-lg bg-gradient-primary text-white font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg">
+                            Get Started
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </nav>
@@ -69,65 +228,39 @@
     </div>
 
     <script>
-        // Theme toggle functionality
-        function toggleTheme() {
+        // Force dark theme as default and remove toggle logic
+        (function enforceDark() {
             const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-            
-            if (isDark) {
-                html.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-            
-            // Update button icons
-            updateThemeIcon();
-        }
+            const body = document.body;
+            html.classList.add('dark');
+            body.classList.add('dark');
+        })();
 
-        // Update theme toggle button icon
-        function updateThemeIcon() {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-            const sunIcon = document.querySelector('.fas.fa-sun');
-            const moonIcon = document.querySelector('.fas.fa-moon');
-            
-            if (isDark) {
-                if (sunIcon) sunIcon.style.display = 'none';
-                if (moonIcon) moonIcon.style.display = 'block';
-            } else {
-                if (sunIcon) sunIcon.style.display = 'block';
-                if (moonIcon) moonIcon.style.display = 'none';
+        // Smooth page transition animation
+        (function initPageAnimations() {
+            const content = document.querySelector('[data-animate="true"], .animate-slide-in-up');
+            if (content) {
+                content.style.opacity = '0';
+                content.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    content.style.transition = 'all 0.5s ease-out';
+                    content.style.opacity = '1';
+                    content.style.transform = 'translateY(0)';
+                }, 100);
             }
-        }
+        })();
 
-        // Initialize theme on page load
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme === 'light') {
-                document.documentElement.classList.remove('dark');
-            } else if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                // Default to dark mode as requested
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-            
-            // Update icons after theme is set
-            setTimeout(updateThemeIcon, 50);
-        }
-
-        // Initialize theme immediately to prevent flash
-        initTheme();
-        
-        // Also initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            initTheme();
-            updateThemeIcon();
+            // Add hover effects to interactive elements
+            const interactiveElements = document.querySelectorAll('button, a, input[type="submit"]');
+            interactiveElements.forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-1px)';
+                });
+                element.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
         });
     </script>
 </body>
