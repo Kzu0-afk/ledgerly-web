@@ -3,155 +3,240 @@
 {% block title %}Ledgerly - {{ current_date|date:"F j, Y" }}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-all duration-300 overflow-x-auto overflow-y-auto">
+        <div class="container mx-auto p-4 md:p-8 max-w-6xl">
 
-        <!-- Header and Navigation -->
-        <header class="flex flex-col lg:flex-row justify-between items-center mb-8">
-            <div class="text-center lg:text-left mb-4 lg:mb-0">
-                <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">
-                    Ledgerly
-                </h1>
-                <p class="text-gray-600 dark:text-gray-400">Smart Daily Budget Tracking</p>
+        <!-- Enhanced Header and Navigation -->
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-12 animate-slide-in-up">
+            <div class="text-center lg:text-left mb-6 lg:mb-0">
+                <div class="flex items-center justify-center lg:justify-start gap-3 mb-3">
+                    <div class="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-wallet text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                            Ledgerly
+                        </h1>
+                        <p class="text-gray-600 dark:text-gray-400 font-medium">Smart Daily Budget Tracking</p>
+                    </div>
+                </div>
             </div>
-            <nav class="flex items-center gap-3">
+            <nav class="flex items-center gap-4">
                 <a href="{% url 'daily_view_date' previous_day.year previous_day.month previous_day.day %}" 
-                   class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200">
-                    <i class="fas fa-chevron-left text-sm"></i> 
-                    <span>Previous</span>
+                   class="group flex items-center gap-2 px-5 py-3 bg-white/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 rounded-xl border border-white/30 dark:border-gray-700/50 backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <i class="fas fa-chevron-left text-sm group-hover:-translate-x-0.5 transition-transform duration-200"></i> 
+                    <span class="font-medium">Previous</span>
                 </a>
                 <a href="{% url 'calendar_view_default' %}" 
-                   class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
-                    <i class="fas fa-calendar-alt mr-1"></i>Calendar
+                   class="group px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <i class="fas fa-calendar-alt mr-2 group-hover:rotate-12 transition-transform duration-200"></i>Calendar
                 </a>
                 <a href="{% url 'daily_view_date' next_day.year next_day.month next_day.day %}" 
-                   class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200">
-                    <span>Next</span>
-                    <i class="fas fa-chevron-right text-sm"></i>
+                   class="group flex items-center gap-2 px-5 py-3 bg-white/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 rounded-xl border border-white/30 dark:border-gray-700/50 backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <span class="font-medium">Next</span>
+                    <i class="fas fa-chevron-right text-sm group-hover:translate-x-0.5 transition-transform duration-200"></i>
                 </a>
             </nav>
         </header>
 
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
             <!-- Left Column: Expenses and Summary -->
-            <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <div class="lg:col-span-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 animate-slide-in-up">
 
                 <!-- Date and Budget Section -->
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{{ current_date|date:"l, F j, Y" }}</h2>
-                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Effective Daily Budget</p>
-                            <p class="text-3xl font-bold text-green-600 dark:text-green-400">
-                                ₱{{ ledger.effective_budget|floatformat:2 }}
+                <div class="border-b border-gray-200/50 dark:border-gray-700/50 pb-6 mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-day text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+                            {{ current_date|date:"l, F j, Y" }}
+                        </h2>
+                    </div>
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                        <div class="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-xl text-white shadow-lg">
+                            <p class="text-sm font-medium mb-2 opacity-90">Effective Daily Budget</p>
+                            <p class="text-4xl font-bold flex items-center gap-2">
+                                <i class="fas fa-peso-sign text-2xl"></i>
+                                {{ ledger.effective_budget|floatformat:2 }}
                             </p>
                         </div>
-                        <div class="flex flex-col md:flex-row items-start md:items-end gap-4">
-                            <form action="{% url 'update_savings' %}" method="POST" class="flex items-center gap-2">
+                        <div class="flex flex-col items-center gap-4 w-full">
+                            <form action="{% url 'update_savings' %}" method="POST" class="flex flex-col items-center gap-3 w-full max-w-sm">
                                 {% csrf_token %}
-                                <div>
-                                    <label class="text-xs text-gray-500 dark:text-gray-400">Withdraw From Savings</label>
-                                    <input type="number" name="amount" step="1" min="1" placeholder="0"
-                                           class="block px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg w-28 focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-gray-100" 
+                                <input type="hidden" name="current_date" value="{{ current_date|date:'Y-m-d' }}">
+                                <div class="w-full text-center">
+                                    <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Withdraw From Savings</label>
+                                    <input type="number" name="amount" step="1" min="1" placeholder="Enter amount"
+                                           class="w-full px-4 py-3 bg-white/80 dark:bg-gray-700/80 border border-yellow-300/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-gray-100 text-center font-medium shadow-inner backdrop-blur-sm transition-all duration-200 focus:scale-105" 
                                            {% if savings_non_positive %}disabled{% endif %} required>
                                 </div>
-                                <button type="submit" name="action" value="withdraw" class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg transition-colors duration-200 {% if savings_non_positive %}opacity-50 cursor-not-allowed{% endif %}" {% if savings_non_positive %}disabled{% endif %}>
-                                    Withdraw
+                                <button type="submit" name="action" value="withdraw" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-orange-500 hover:to-yellow-500 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg {% if savings_non_positive %}opacity-50 cursor-not-allowed{% endif %}" {% if savings_non_positive %}disabled{% endif %}>
+                                    <i class="fas fa-hand-holding-usd mr-2"></i>Withdraw
                                 </button>
                             </form>
                             {% if savings_non_positive %}
-                            <div class="text-sm text-red-500 dark:text-red-400 mt-2">Cannot withdraw. Savings is zero or negative.</div>
+                            <div class="text-sm text-red-500 dark:text-red-400 text-center bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Cannot withdraw. Savings is zero or negative.
+                            </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
 
                 <!-- Expenses List -->
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Today's Expenses</h3>
-                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shopping-cart text-white text-sm"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">Today's Expenses</h3>
+                    </div>
+                    <div class="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                         {% for expense in expenses %}
-                        <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <span class="text-gray-800 dark:text-gray-200">{{ expense.description }}</span>
-                            <span class="font-semibold text-red-600 dark:text-red-400">-₱{{ expense.price }}</span>
+                        <div class="group flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] border border-gray-200/50 dark:border-gray-600/50">
+                            <div class="flex items-center gap-4 flex-1">
+                                <div class="flex-1">
+                                    <span class="text-gray-800 dark:text-gray-200 font-medium text-sm md:text-base">{{ expense.description }}</span>
+                                </div>
+                                
+                                <!-- Action Buttons Group -->
+                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <!-- Edit Button with Modal Trigger -->
+                                    <button type="button" class="edit-btn flex items-center justify-center w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg"
+                                            title="Edit Expense"
+                                            data-expense-id="{{ expense.id }}"
+                                            data-expense-description="{{ expense.description|escape }}"
+                                            data-expense-price="{{ expense.price }}">
+                                        <i class="fas fa-edit text-xs"></i>
+                                    </button>
+                                    
+                                    <!-- Delete Button: simple POST form (no JS required) -->
+                                    <form action="{% url 'delete_expense' expense.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="flex items-center justify-center w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg" title="Delete Expense">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 ml-4">
+                                <span class="font-bold text-red-600 dark:text-red-400 flex items-center gap-1 text-sm md:text-base">
+                                    <i class="fas fa-minus text-xs"></i>
+                                    ₱{{ expense.price }}
+                                </span>
+                            </div>
                         </div>
                         {% empty %}
-                        <div class="text-center py-6">
-                            <p class="text-gray-500 dark:text-gray-400">No expenses recorded today.</p>
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-receipt text-gray-400 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500 dark:text-gray-400 font-medium">No expenses recorded today.</p>
+                            <p class="text-gray-400 dark:text-gray-500 text-sm mt-1">Your budget is safe! 🎉</p>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- Totals and Status -->
-                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-700 dark:text-gray-300 font-medium">Total Spent:</span>
-                        <span class="font-bold text-red-600 dark:text-red-400">₱{{ ledger.total_expenses }} ({{ ledger.budget_usage_percentage|floatformat:0 }}%)</span>
+                <!-- Enhanced Totals and Status -->
+                <div class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 p-6 rounded-xl shadow-inner border border-blue-200/50 dark:border-gray-600/50 space-y-4">
+                    {% if ledger.remaining_budget <= 0 %}
+                    <div class="mb-3 text-sm text-red-500 dark:text-red-400">Budget exhausted. Adding expenses is disabled until you add budget.</div>
+                    {% endif %}
+                    <div class="flex justify-between items-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300 font-semibold flex items-center gap-2">
+                            <i class="fas fa-calculator text-blue-500"></i>
+                            Total Spent:
+                        </span>
+                        <span class="font-bold text-red-600 dark:text-red-400 text-lg">₱{{ ledger.total_expenses }} ({{ ledger.budget_usage_percentage|floatformat:0 }}%)</span>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-700 dark:text-gray-300 font-medium">Daily Savings:</span>
-                        <span class="text-lg font-bold {% if ledger.daily_savings >= 0 %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}">
-                            ₱{{ ledger.daily_savings }}
+                    <div class="flex justify-between items-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <span class="text-gray-700 dark:text-gray-300 font-semibold flex items-center gap-2">
+                            <i class="fas fa-piggy-bank text-green-500"></i>
+                            Daily Savings:
+                        </span>
+                        <span class="text-xl font-bold {% if ledger.remaining_budget >= 0 %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                            ₱{{ ledger.remaining_budget }}
                         </span>
                     </div>
-                    <div class="flex justify-between items-center pt-2 border-t border-gray-300 dark:border-gray-500">
-                        <span class="text-gray-700 dark:text-gray-300 font-medium">Status:</span>
+                    <div class="flex justify-between items-center pt-4 border-t border-white/30 dark:border-gray-500/30">
+                        <span class="text-gray-700 dark:text-gray-300 font-semibold flex items-center gap-2">
+                            <i class="fas fa-chart-pie text-purple-500"></i>
+                            Status:
+                        </span>
                         {% if ledger.status == "Balanced" %}
-                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-medium px-3 py-1 rounded-full">{{ ledger.status }}</span>
+                            <span class="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-md">
+                                <i class="fas fa-balance-scale mr-1"></i>{{ ledger.status }}
+                            </span>
                         {% elif ledger.status == "Underspent" %}
-                            <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium px-3 py-1 rounded-full">{{ ledger.status }}</span>
+                            <span class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-md">
+                                <i class="fas fa-arrow-down mr-1"></i>{{ ledger.status }}
+                            </span>
                         {% else %}
-                            <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-sm font-medium px-3 py-1 rounded-full">{{ ledger.status }}</span>
+                            <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-md">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>{{ ledger.status }}
+                            </span>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
             <!-- Right Column: Savings and Actions -->
-            <div class="space-y-6">
+            <div class="space-y-8">
                 <!-- Total Savings Card -->
-                <div class="bg-green-50 dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-green-200 dark:border-gray-700 text-center">
-                    <h3 class="text-sm font-semibold text-green-700 dark:text-green-300 uppercase mb-2">Total Savings Account</h3>
-                    <p class="text-4xl font-bold text-green-600 dark:text-green-400 mb-4">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 p-8 rounded-2xl shadow-2xl border border-green-200/50 dark:border-gray-700/50 text-center backdrop-blur-md animate-slide-in-up">
+                    <div class="flex items-center justify-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-piggy-bank text-white text-sm"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-green-700 dark:text-green-300 uppercase tracking-wide">Total Savings Account</h3>
+                    </div>
+                    <p class="text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-6 animate-pulse-soft">
                         ₱{{ savings_account.balance|floatformat:2 }}
                     </p>
-                    <form action="{% url 'update_savings' %}" method="POST" class="space-y-3">
+                    <form action="{% url 'update_savings' %}" method="POST" class="space-y-4">
                         {% csrf_token %}
                         <input type="number" name="amount" step="1" min="1" placeholder="Enter amount" 
-                               class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-gray-100 text-center" required>
-                        <div class="flex gap-2">
+                               class="w-full px-4 py-3 bg-white/80 dark:bg-gray-700/80 border border-green-300/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-gray-100 text-center font-medium shadow-inner backdrop-blur-sm transition-all duration-200 focus:scale-105" required>
+                        <div class="flex gap-3">
                             <button type="submit" name="action" value="add" 
-                                    class="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded-lg transition-colors duration-200">
-                                <i class="fas fa-plus mr-1"></i>Add
+                                    class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-emerald-500 hover:to-green-500 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                <i class="fas fa-plus mr-2"></i>Add Savings
                             </button>
-                            <!-- Withdraw moved to Set Today's Budget section when budget is 0.00 -->
                         </div>
                     </form>
                 </div>
 
                 <!-- Add Expense Card -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Add New Expense</h3>
-                    <form method="POST" class="space-y-4">
+                <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 animate-slide-in-up">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-receipt text-white text-sm"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">Add New Expense</h3>
+                    </div>
+                    <form method="POST" class="space-y-6">
                         {% csrf_token %}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</label>
                             <input type="text" name="description" placeholder="What did you buy?" 
-                                   class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100" required>
+                                   class="w-full px-4 py-3 bg-gray-50/80 dark:bg-gray-700/80 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 font-medium shadow-inner backdrop-blur-sm transition-all duration-200 focus:scale-105" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Amount</label>
                             <div class="relative">
-                                <span class="absolute left-3 top-2 text-gray-500 dark:text-gray-400">₱</span>
+                                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">₱</span>
                                 <input type="number" name="price" step="0.01" placeholder="0.00" 
-                                       class="w-full pl-8 pr-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100" required>
+                                       class="w-full pl-10 pr-4 py-3 bg-gray-50/80 dark:bg-gray-700/80 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 font-medium shadow-inner backdrop-blur-sm transition-all duration-200 focus:scale-105" required>
                             </div>
                         </div>
                         <button type="submit" 
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors duration-200">
-                            <i class="fas fa-plus mr-1"></i>Add Expense
+                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                            <i class="fas fa-plus mr-2"></i>Add Expense
                         </button>
                     </form>
                 </div>
@@ -159,4 +244,147 @@
         </main>
     </div>
 </div>
+
+<!-- Edit Expense Modal -->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-slide-in-up">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <i class="fas fa-edit text-white text-sm"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">Edit Expense</h3>
+        </div>
+        
+            <form id="editForm" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                <input type="text" id="editDescription" name="description" 
+                       class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 font-medium transition-all duration-200" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Amount</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">₱</span>
+                    <input type="number" id="editPrice" name="price" step="0.01" 
+                           class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 font-medium transition-all duration-200" required>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closeEditModal()" 
+                        class="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-200">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105">
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Modal for Delete -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-slide-in-up">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-white text-sm"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">Delete Expense</h3>
+        </div>
+        
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Are you sure you want to delete "<span id="deleteExpenseName" class="font-semibold"></span>"? This action cannot be undone.
+        </p>
+        
+        <div class="flex gap-3">
+            <button onclick="closeDeleteModal()" 
+                    class="flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-200">
+                Cancel
+            </button>
+            <form id="deleteForm" method="POST" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="w-full px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 hover:from-pink-500 hover:to-red-500 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Edit Modal Functions
+    function openEditModal(expenseId, description, price) {
+        document.getElementById('editDescription').value = description;
+        document.getElementById('editPrice').value = price;
+        document.getElementById('editForm').action = `/expense/${expenseId}/edit/`;
+        document.getElementById('editModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Delete Confirmation Functions
+    function confirmDelete(expenseId, description) {
+        document.getElementById('deleteExpenseName').textContent = description;
+        document.getElementById('deleteForm').action = `/expense/${expenseId}/delete/`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Add event listeners to edit buttons (use event delegation for reliability)
+    document.body.addEventListener('click', function(e) {
+        const btn = e.target.closest('.edit-btn');
+        if (btn) {
+            const expenseId = btn.getAttribute('data-expense-id');
+            const description = btn.getAttribute('data-expense-description');
+            const price = btn.getAttribute('data-expense-price');
+            openEditModal(expenseId, description, price);
+        }
+    });
+
+    // Add event listeners to delete buttons
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const expenseId = this.dataset.expenseId;
+            const description = this.dataset.expenseDescription;
+            confirmDelete(expenseId, description);
+        });
+    });
+
+    // Close modal button event listeners
+    window.closeEditModal = closeEditModal;
+    window.closeDeleteModal = closeDeleteModal;
+
+    // Close modals when clicking outside
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeEditModal();
+            closeDeleteModal();
+        }
+    });
+});
+</script>
+
 {% endblock %}

@@ -33,9 +33,15 @@ class DailyLedger(models.Model):
         return Decimal('0.00')
 
     @property
+    def remaining_budget(self):
+        """Remaining budget for the day (can be zero but never negative for display)."""
+        remaining = self.base_budget - self.total_expenses
+        return remaining if remaining > Decimal('0.00') else Decimal('0.00')
+
+    @property
     def effective_budget(self):
-        """Effective budget equals today's base budget in overrule mode."""
-        return self.base_budget
+        """Expose remaining budget as the effective budget shown in UI."""
+        return self.remaining_budget
 
     @property
     def daily_savings(self):
@@ -44,21 +50,25 @@ class DailyLedger(models.Model):
 
     @property
     def budget_usage_percentage(self):
-        """Percentage of effective budget spent (Decimal-safe)."""
-        effective = self.effective_budget
-        if effective > 0:
-            return (self.total_expenses / effective) * Decimal('100')
-        return Decimal('0.00')
+        """Percentage of the allocated base budget that has been spent."""
+        allocated = self.base_budget
+        if allocated > Decimal('0.00'):
+            return (self.total_expenses / allocated) * Decimal('100')
+        # No budget allocated: if anything was spent, treat as 100%+ usage
+        return Decimal('100.00') if self.total_expenses > Decimal('0.00') else Decimal('0.00')
 
     @property
     def status(self):
-        usage = self.budget_usage_percentage
-        if usage < 50:
-            return "Underspent"
-        elif 50 <= usage <= 90:
-            return "Balanced"
-        else:
+        # Determine status relative to base budget (not remaining).
+        if self.base_budget == Decimal('0.00'):
+            return "Overspent" if self.total_expenses > Decimal('0.00') else "Underspent"
+
+        usage = (self.total_expenses / self.base_budget) * Decimal('100')
+        if self.total_expenses > self.base_budget:
             return "Overspent"
+        if usage <= Decimal('90') and usage >= Decimal('50'):
+            return "Balanced"
+        return "Underspent"
     
     class Meta:
         unique_together = (('user', 'date'),)
