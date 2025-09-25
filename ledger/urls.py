@@ -1,7 +1,7 @@
 # ledger/urls.py
 
 from django.urls import path
-from .views import daily_view, update_savings, calendar_view, update_budget, get_day_summary, register, edit_expense, delete_expense
+from .views import daily_view, update_savings, calendar_view, update_budget, get_day_summary, register, delete_expense
 
 urlpatterns = [
     # URL for today's ledger (the homepage)
@@ -25,7 +25,6 @@ urlpatterns = [
     # AJAX endpoint for getting day summary
     path('api/day-summary/', get_day_summary, name='get_day_summary'),
     path('register/', register, name='register'),
-    # Expense edit/delete (Expense uses default integer PK)
-    path('expense/<int:expense_id>/edit/', edit_expense, name='edit_expense'),
+    # Expense delete (edit removed)
     path('expense/<int:expense_id>/delete/', delete_expense, name='delete_expense'),
 ]
