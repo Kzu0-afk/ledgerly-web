@@ -13,14 +13,16 @@ from django.db.models import Sum
 from django.contrib import messages
 
 
-def propagate_carryover(user, start_date: date):
-    """Propagate remaining budget forward to successive days until it reaches zero
-    or until we hit a day that already has expenses (we won't overwrite those).
+def propagate_carryover(user, start_date: date, preserve_manual_increases: bool = True):
+    """Propagate remaining budget forward to successive days.
 
-    Rules:
-    - Next day base_budget becomes previous day's remaining_budget
-    - Continue while remaining > 0 and next day's expenses count == 0
-    - Stop at safety horizon of 60 days to avoid infinite loops
+    When preserve_manual_increases is True, we will only increase future
+    days to match today's remaining (never lower), which preserves manual
+    bumps such as savings withdrawals. When False, we force the next day's
+    base to equal today's remaining (lowering allowed), which is needed
+    after expense edits so future days reflect reduced remaining.
+
+    We never overwrite a day that already has expenses.
     """
     horizon_days = 60
     current_date = start_date
@@ -33,13 +35,24 @@ def propagate_carryover(user, start_date: date):
         remaining = ledger.remaining_budget
         next_date = current_date + timedelta(days=1)
 
-        # Ensure next day exists (so user can see ahead) but do not overwrite days with expenses
+        # Ensure next day exists (so user can see ahead)
         next_ledger, _ = DailyLedger.objects.get_or_create(user=user, date=next_date)
 
-        # Set next day's base to today's remaining
-        if next_ledger.base_budget != remaining:
-            next_ledger.base_budget = remaining
-            next_ledger.save()
+        # If next day already has expenses, stop propagation at that boundary
+        if next_ledger.expenses.exists():
+            break
+
+        if preserve_manual_increases:
+            # Only raise the next day up to remaining; do not reduce it
+            if next_ledger.base_budget < remaining:
+                next_ledger.base_budget = remaining
+                next_ledger.save()
+        else:
+            # Force exact carryover. Use this after expense changes so
+            # subsequent days reflect lowered remaining.
+            if next_ledger.base_budget != remaining:
+                next_ledger.base_budget = remaining
+                next_ledger.save()
 
         if remaining <= Decimal('0.00'):
             break
@@ -57,13 +70,14 @@ def daily_view(request, year=None, month=None, day=None):
     next_day = current_date + timedelta(days=1)
     
     ledger, created = DailyLedger.objects.get_or_create(user=request.user, date=current_date)
-    # Carry over yesterday's remaining into today's base budget. Also self-heal if ledger exists but differs and has no expenses yet.
+    # Carry over yesterday's remaining into today's base budget. Self-heal if ledger exists but differs and has no expenses yet.
     prev_ledger = DailyLedger.objects.filter(user=request.user, date=previous_day).first()
     if prev_ledger:
         remaining_yesterday = (prev_ledger.base_budget - (prev_ledger.expenses.aggregate(total=Sum('price'))['total'] or Decimal('0.00')))
         carry = remaining_yesterday if remaining_yesterday > Decimal('0.00') else Decimal('0.00')
-        # Preserve manual increases (e.g., withdrawals). Only bump up if below carry.
-        if ledger.base_budget < carry:
+        # If today has no expenses yet, force exact carryover so future days reflect reductions.
+        # This keeps the display consistent (e.g., 80 today -> 80 tomorrow).
+        if ledger.expenses.count() == 0 and ledger.base_budget != carry:
             ledger.base_budget = carry
             ledger.save()
 
@@ -87,8 +101,8 @@ def daily_view(request, year=None, month=None, day=None):
                         messages.error(request, "Expense exceeds remaining budget. Reduce the amount or add budget.")
                     else:
                         Expense.objects.create(daily_ledger=ledger, description=description, price=price)
-                        # Expense changes remaining; re-run propagation from this date
-                        propagate_carryover(request.user, current_date)
+                        # Expense changes remaining; re-run propagation from this date, forcing exact carryover
+                        propagate_carryover(request.user, current_date, preserve_manual_increases=False)
             except (ValueError, TypeError):
                 pass
         return redirect('daily_view_date', year=current_date.year, month=current_date.month, day=current_date.day)
@@ -114,6 +128,14 @@ def update_savings(request):
             # 1. Get the data from the form
             amount_str = request.POST.get('amount')
             action = request.POST.get('action')
+            # Target date comes from the page being viewed; fallback to today
+            current_date_str = request.POST.get('current_date')
+            target_date = timezone.now().date()
+            if current_date_str:
+                try:
+                    target_date = date.fromisoformat(current_date_str)
+                except ValueError:
+                    pass
             
             if amount_str and action:
                 amount = Decimal(amount_str)
@@ -126,31 +148,31 @@ def update_savings(request):
                     # Must be a whole positive number
                     if amount <= 0:
                         messages.error(request, "Amount must be a whole, positive number.")
-                        return redirect('daily_view_today')
+                        return redirect('daily_view_date', year=target_date.year, month=target_date.month, day=target_date.day)
                     # ensure whole number
                     if amount != amount.to_integral_value():
                         messages.error(request, "Amount must be a whole number (no decimals).")
-                        return redirect('daily_view_today')
+                        return redirect('daily_view_date', year=target_date.year, month=target_date.month, day=target_date.day)
                     savings_account.balance += amount
                     messages.success(request, f"Added ₱{amount} to savings.")
                 elif action == 'withdraw':
                     if savings_account.balance <= Decimal('0.00'):
                         messages.error(request, "Cannot withdraw. Savings is zero or negative.")
-                        return redirect('daily_view_today')
+                        return redirect('daily_view_date', year=target_date.year, month=target_date.month, day=target_date.day)
                     if amount > savings_account.balance:
                         messages.error(request, "Cannot withdraw more than available savings.")
-                        return redirect('daily_view_today')
+                        return redirect('daily_view_date', year=target_date.year, month=target_date.month, day=target_date.day)
                     # Decrease savings and move cash to today's effective budget (base_budget)
                     savings_account.balance -= amount
                     
-                    # Ensure today's ledger exists and add withdrawn amount to base budget
-                    today = timezone.now().date()
-                    today_ledger, _ = DailyLedger.objects.get_or_create(user=request.user, date=today)
-                    today_ledger.base_budget += amount
-                    today_ledger.save()
+                    # Ensure the target day's ledger exists and add withdrawn amount to base budget
+                    target_ledger, _ = DailyLedger.objects.get_or_create(user=request.user, date=target_date)
+                    target_ledger.base_budget += amount
+                    target_ledger.save()
 
-                    # Changing today's base affects future carryover
-                    propagate_carryover(request.user, today)
+                    # Changing this day's base affects future carryover.
+                    # Preserve manual increases so we don't lower future days.
+                    propagate_carryover(request.user, target_date, preserve_manual_increases=True)
                     
                     messages.success(request, f"Withdrew ₱{amount} from savings and added to today's budget.")
                 
@@ -162,7 +184,14 @@ def update_savings(request):
             # A more advanced app might show an error message.
             pass
     
-    # 5. Redirect the user back to the main page to see the updated total
+    # 5. Redirect the user back to the date they were viewing (or today by default)
+    try:
+        current_date_str = request.POST.get('current_date')
+        if current_date_str:
+            d = date.fromisoformat(current_date_str)
+            return redirect('daily_view_date', year=d.year, month=d.month, day=d.day)
+    except Exception:
+        pass
     return redirect('daily_view_today')
 
 @login_required(login_url='login')
@@ -266,8 +295,8 @@ def edit_expense(request, expense_id):
                     expense.price = new_price
                     expense.save()
                     messages.success(request, "Expense updated.")
-                    # Re-propagate from edited day
-                    propagate_carryover(request.user, ledger_date)
+                    # Re-propagate from edited day with forced carryover
+                    propagate_carryover(request.user, ledger_date, preserve_manual_increases=False)
         except (ValueError, TypeError):
             pass
     return redirect('daily_view_date', year=ledger_date.year, month=ledger_date.month, day=ledger_date.day)
@@ -280,8 +309,8 @@ def delete_expense(request, expense_id):
     if request.method == 'POST':
         expense.delete()
         messages.success(request, "Expense removed.")
-        # Re-propagate from deletion day
-        propagate_carryover(request.user, ledger_date)
+        # Re-propagate from deletion day with forced carryover
+        propagate_carryover(request.user, ledger_date, preserve_manual_increases=False)
     return redirect('daily_view_date', year=ledger_date.year, month=ledger_date.month, day=ledger_date.day)
 
 def register(request):
