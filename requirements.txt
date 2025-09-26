@@ -4,3 +4,4 @@ psycopg2-binary==2.9.9
 dj-database-url==2.3.0
 django-cors-headers==4.6.0
 gunicorn==23.0.0
+django-tailwind==4.2.0
