@@ -150,17 +150,22 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # CORS/CSRF
 CORS_ALLOWED_ORIGINS = [
-    # Add your deployed frontend URL(s) later, e.g. 'https://<project>.vercel.app'
+    # Vercel frontend
+    'https://ledgerly-web.vercel.app',
 ]
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.up.railway.app',
+    'https://ledgerly-web.vercel.app',
 ]
+
+# Cookies for cross-site (frontend on a different domain)
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 # Proxy headers
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
-
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
