@@ -4,26 +4,96 @@
 {% block title %}Register · Ledgerly{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto mt-16 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-  <h1 class="text-2xl font-semibold mb-4">Create account</h1>
-  <form method="post" class="space-y-4">
-    {% csrf_token %}
-    {% if form.non_field_errors %}
-      <div class="text-red-600 text-sm">{{ form.non_field_errors }}</div>
-    {% endif %}
-    {% for field in form %}
-      <div>
-        <label class="block text-sm mb-1">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-          <div class="text-red-600 text-xs">{{ field.errors|striptags }}</div>
-        {% endif %}
+<div class="min-h-screen flex items-center justify-center px-4 py-8">
+  <div class="w-full max-w-md space-y-8 animate-slide-in-up">
+    <!-- Centered Ledgerly Title -->
+    <div class="text-center">
+      <div class="mx-auto w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 shadow-lg">
+        <i class="fas fa-wallet text-white text-2xl"></i>
       </div>
-    {% endfor %}
-    <button class="w-full py-2 rounded bg-blue-600 text-white">Register</button>
-  </form>
-  <p class="text-sm mt-4">Already have an account? <a href="{% url 'login' %}" class="text-blue-600">Login</a></p>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+        Ledgerly
+      </h1>
+      <p class="text-gray-400 text-sm">Smart Budget Tracker</p>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl p-8">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-semibold text-white">Create account</h2>
+        <p class="text-gray-400 text-sm mt-1">Join Ledgerly and start tracking your budget</p>
+      </div>
+      
+      <form method="post" class="space-y-5">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+        
+        {% for field in form %}
+          <div>
+            <br/>
+            <label class="block text-sm font-medium text-gray-300 mb-2">{{ field.label }}:</label>
+            <div class="relative">
+              {% if field.label == "Username" %}
+                <!-- CHANGE HERE -->
+                <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" 
+                       class="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400"
+                       placeholder="Choose a username">
+              {% elif field.label == "First name" %}
+                <!-- CHANGE HERE -->
+                <i class="fas fa-id-badge absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" 
+                       class="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400"
+                       placeholder="Enter your first name">
+              {% elif field.label == "Last name" %}
+                <!-- CHANGE HERE -->
+                <i class="fas fa-id-card absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" 
+                       class="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400"
+                       placeholder="Enter your last name">
+              {% elif field.label == "Email" %}
+                <!-- CHANGE HERE -->
+                <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" 
+                       class="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400"
+                       placeholder="Enter your email address">
+              {% elif "Password" in field.label %}
+                <!-- CHANGE HERE -->
+                <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" 
+                       class="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400"
+                       placeholder="{% if 'confirmation' in field.label %}Confirm your password{% else %}Create a password{% endif %}">
+              {% else %}
+                {{ field }}
+              {% endif %}
+            </div>
+            {% if field.errors %}
+              <div class="text-red-500 text-xs mt-1">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        
+        <div class="pt-4">
+          <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800">
+            <i class="fas fa-user-plus mr-2"></i>Create Account
+          </button>
+        </div>
+      </form>
+      
+      <div class="mt-6 text-center">
+        <br/>
+        <p class="text-sm text-gray-400">
+          Already have an account? 
+          <a href="{% url 'login' %}" class="font-medium text-blue-400 hover:text-blue-300 transition-colors duration-200">
+            Sign in here!
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
-
-
