@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.conf import settings
 from decimal import Decimal
 import uuid
+from django.core.validators import RegexValidator
 
 class SavingsAccount(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='savings_account', null=True, blank=True)
@@ -75,9 +76,36 @@ class DailyLedger(models.Model):
         indexes = [
             models.Index(fields=['user', 'date']),
         ]
-        
+
+class Category(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='categories')
+    title = models.CharField(max_length=100)
+    color = models.CharField(
+        max_length=7,
+        default="#3B82F6",
+        validators=[
+            RegexValidator(
+                regex=r'^#(?:[0-9a-fA-F]{3}){1,2}$',
+                message='Color must be a hex code like #AABBCC'
+            )
+        ],
+        help_text="Hex color like #AABBCC"
+    )
+
+    class Meta:
+        unique_together = (('user', 'title'),)
+        indexes = [
+            models.Index(fields=['user', 'title']),
+        ]
+
+    def __str__(self):
+        return self.title
+
+
 class Expense(models.Model):
     daily_ledger = models.ForeignKey(DailyLedger, on_delete=models.CASCADE, related_name='expenses')
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses')
     description = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
