@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.http import JsonResponse
-from .models import DailyLedger, Expense, SavingsAccount
+from .models import DailyLedger, Expense, SavingsAccount, Category
 from decimal import Decimal
 from datetime import date, timedelta
 from .utils import LedgerHTMLCalendar, reverse
@@ -11,6 +11,7 @@ from django.contrib.auth import login
 from .forms import RegistrationForm
 from django.db.models import Sum
 from django.contrib import messages
+from django.db.models import Sum
 
 
 def propagate_carryover(user, start_date: date, preserve_manual_increases: bool = True):
@@ -85,9 +86,11 @@ def daily_view(request, year=None, month=None, day=None):
     propagate_carryover(request.user, current_date)
     savings_account, _ = SavingsAccount.objects.get_or_create(user=request.user)
 
+    # Handle expense submission
     if request.method == 'POST':
         description = request.POST.get('description')
         price_str = request.POST.get('price')
+        category_text = (request.POST.get('category_text') or '').strip()
 
         if description and price_str:
             try:
@@ -100,7 +103,14 @@ def daily_view(request, year=None, month=None, day=None):
                     if price > ledger.remaining_budget:
                         messages.error(request, "Expense exceeds remaining budget. Reduce the amount or add budget.")
                     else:
-                        Expense.objects.create(daily_ledger=ledger, description=description, price=price)
+                        # Category is optional: create/use by title if provided
+                        category = None
+                        if category_text:
+                            category, _ = Category.objects.get_or_create(
+                                user=request.user,
+                                title=category_text
+                            )
+                        Expense.objects.create(daily_ledger=ledger, category=category, description=description, price=price)
                         # Expense changes remaining; re-run propagation from this date, forcing exact carryover
                         propagate_carryover(request.user, current_date, preserve_manual_increases=False)
             except (ValueError, TypeError):
@@ -108,6 +118,8 @@ def daily_view(request, year=None, month=None, day=None):
         return redirect('daily_view_date', year=current_date.year, month=current_date.month, day=current_date.day)
 
     expenses_today = ledger.expenses.all()
+    categories = Category.objects.filter(user=request.user).order_by('title')
+    categories = categories.annotate(total_expenses=Sum('expenses__price'))
     context = {
         'ledger': ledger,
         'expenses': expenses_today,
@@ -117,6 +129,7 @@ def daily_view(request, year=None, month=None, day=None):
         'today_long': current_date.strftime("%m/%d/%Y | %A"),
         'previous_day': previous_day,
         'next_day': next_day,
+        'categories': categories,
     }
     return render(request, 'ledger/daily_view.html', context)
 
