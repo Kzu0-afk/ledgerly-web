@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.http import JsonResponse
-from .models import DailyLedger, Expense, SavingsAccount, Category
+from .models import DailyLedger, Expense, SavingsAccount, Category, ensure_default_categories_for_user
 from decimal import Decimal
 from datetime import date, timedelta
 from .utils import LedgerHTMLCalendar, reverse
@@ -43,6 +43,11 @@ def propagate_carryover(user, start_date: date, preserve_manual_increases: bool 
         if next_ledger.expenses.exists():
             break
 
+        # Respect manual override: do not overwrite or pass through beyond a day
+        # that the user explicitly set (e.g., Reset Budget or manual base edits).
+        if getattr(next_ledger, 'is_manual_override', False):
+            break
+
         if preserve_manual_increases:
             # Only raise the next day up to remaining; do not reduce it
             if next_ledger.base_budget < remaining:
@@ -73,11 +78,10 @@ def daily_view(request, year=None, month=None, day=None):
     ledger, created = DailyLedger.objects.get_or_create(user=request.user, date=current_date)
     # Carry over yesterday's remaining into today's base budget. Self-heal if ledger exists but differs and has no expenses yet.
     prev_ledger = DailyLedger.objects.filter(user=request.user, date=previous_day).first()
-    if prev_ledger:
+    if prev_ledger and not getattr(ledger, 'is_manual_override', False):
         remaining_yesterday = (prev_ledger.base_budget - (prev_ledger.expenses.aggregate(total=Sum('price'))['total'] or Decimal('0.00')))
         carry = remaining_yesterday if remaining_yesterday > Decimal('0.00') else Decimal('0.00')
-        # If today has no expenses yet, force exact carryover so future days reflect reductions.
-        # This keeps the display consistent (e.g., 80 today -> 80 tomorrow).
+        # If today has no expenses yet and not manually overridden, carry over.
         if ledger.expenses.count() == 0 and ledger.base_budget != carry:
             ledger.base_budget = carry
             ledger.save()
@@ -85,6 +89,8 @@ def daily_view(request, year=None, month=None, day=None):
     # After computing today's state, propagate remaining forward to successive days
     propagate_carryover(request.user, current_date)
     savings_account, _ = SavingsAccount.objects.get_or_create(user=request.user)
+    # Ensure default categories exist for this user so the datalist has options.
+    ensure_default_categories_for_user(request.user)
 
     # Handle expense submission
     if request.method == 'POST':
@@ -118,6 +124,13 @@ def daily_view(request, year=None, month=None, day=None):
         return redirect('daily_view_date', year=current_date.year, month=current_date.month, day=current_date.day)
 
     expenses_today = ledger.expenses.all()
+    # Aggregate totals by category for display
+    expenses_by_category = (
+        ledger.expenses
+        .values('category__title', 'category__color')
+        .annotate(total=Sum('price'))
+        .order_by('category__title')
+    )
     categories = Category.objects.filter(user=request.user).order_by('title')
     categories = categories.annotate(total_expenses=Sum('expenses__price'))
     context = {
@@ -130,6 +143,8 @@ def daily_view(request, year=None, month=None, day=None):
         'previous_day': previous_day,
         'next_day': next_day,
         'categories': categories,
+        'expenses_by_category': expenses_by_category,
+        'is_today': current_date == timezone.now().date(),
     }
     return render(request, 'ledger/daily_view.html', context)
 
@@ -181,6 +196,8 @@ def update_savings(request):
                     # Ensure the target day's ledger exists and add withdrawn amount to base budget
                     target_ledger, _ = DailyLedger.objects.get_or_create(user=request.user, date=target_date)
                     target_ledger.base_budget += amount
+                    # Mark as manual so auto-carry does not overwrite
+                    target_ledger.is_manual_override = True
                     target_ledger.save()
 
                     # Changing this day's base affects future carryover.
@@ -236,6 +253,80 @@ def calendar_view(request, year=None, month=None):
     }
     return render(request, 'ledger/calendar.html', context)
 
+
+@login_required(login_url='login')
+def monthly_summary(request, year=None, month=None):
+    """Show monthly totals per category with percentages for the selected month."""
+    if year is None or month is None:
+        today = timezone.now().date()
+        year, month = today.year, today.month
+
+    # Aggregate expenses for this user by category across the month
+    qs = (
+        Expense.objects
+        .filter(
+            daily_ledger__user=request.user,
+            daily_ledger__date__year=year,
+            daily_ledger__date__month=month,
+        )
+        .values('category__title', 'category__color')
+        .annotate(total=Sum('price'))
+        .order_by('-total')
+    )
+
+    month_total = sum((row['total'] or Decimal('0.00')) for row in qs) or Decimal('0.00')
+
+    # Prepare rows with percentage
+    summary_rows = []
+    for row in qs:
+        total = row['total'] or Decimal('0.00')
+        percent = Decimal('0.00')
+        if month_total > Decimal('0.00'):
+            percent = (total / month_total) * Decimal('100')
+        summary_rows.append({
+            'title': row['category__title'] or 'Uncategorized',
+            'color': row['category__color'] or '#6B7280',
+            'total': total,
+            'percent': percent,
+        })
+
+    # Compute prev/next month links
+    next_month = month + 1
+    next_year = year
+    if next_month > 12:
+        next_month = 1
+        next_year += 1
+
+    prev_month = month - 1
+    prev_year = year
+    if prev_month < 1:
+        prev_month = 12
+        prev_year -= 1
+
+    context = {
+        'summary_rows': summary_rows,
+        'month_total': month_total,
+        'current_month_name': date(year, month, 1).strftime('%B %Y'),
+        'next_month_url': reverse('monthly_summary', args=(next_year, next_month)),
+        'prev_month_url': reverse('monthly_summary', args=(prev_year, prev_month)),
+        'year': year,
+        'month': month,
+        'calendar_url': reverse('calendar_view', args=(year, month)),
+        'ledger_today_url': reverse('daily_view_date', args=(timezone.now().date().year, timezone.now().date().month, timezone.now().date().day)),
+    }
+
+    return render(request, 'ledger/monthly_summary.html', context)
+
+
+def hide_patch_notes(request):
+    """Remember the user's choice to hide patch notes for a specific version using session."""
+    if request.method == 'POST':
+        version = (request.POST.get('version') or '').strip()
+        if version:
+            request.session['patch_notes_hidden_version'] = version
+    # Always return to login page
+    return redirect('login')
+
 @login_required(login_url='login')
 def update_budget(request, year, month, day):
     if request.method == 'POST':
@@ -247,10 +338,42 @@ def update_budget(request, year, month, day):
             
             if new_budget_str:
                 ledger.base_budget = Decimal(new_budget_str)
+                ledger.is_manual_override = True
                 ledger.save()
         except (DailyLedger.DoesNotExist, ValueError, TypeError):
             pass
     
+    return redirect('daily_view_date', year=year, month=month, day=day)
+
+
+@login_required(login_url='login')
+def reset_budget(request, year, month, day):
+    """Reset the effective daily budget for a date to zero, without
+    affecting previous days, and cascade the change forward.
+
+    Implementation detail: set base_budget to equal the sum of today's
+    expenses so remaining becomes zero. Then propagate exact carryover to
+    future days, which applies the new remaining (zero) forward.
+    """
+    if request.method == 'POST':
+        try:
+            current_date = date(year, month, day)
+            ledger = DailyLedger.objects.get(user=request.user, date=current_date)
+            # Make remaining zero
+            ledger.base_budget = ledger.total_expenses
+            ledger.is_manual_override = True
+            ledger.save()
+
+            # Cascade forward. Each call sets the next day exactly to this
+            # day's remaining and stops; looping fans the change forward.
+            loop_date = current_date
+            for _ in range(60):
+                propagate_carryover(request.user, loop_date, preserve_manual_increases=False)
+                loop_date = loop_date + timedelta(days=1)
+
+            messages.success(request, "Effective daily budget reset for this date.")
+        except DailyLedger.DoesNotExist:
+            pass
     return redirect('daily_view_date', year=year, month=month, day=day)
 
 @login_required(login_url='login')

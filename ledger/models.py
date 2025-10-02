@@ -6,6 +6,15 @@ from decimal import Decimal
 import uuid
 from django.core.validators import RegexValidator
 
+# Default category definitions that should exist for every user.
+# Each item is a tuple of (title, hex_color).
+# These are not placeholder data; they are initial options to streamline UX.
+DEFAULT_CATEGORY_DEFINITIONS = [
+    ("Savings", "#22C55E"),           # green-500
+    ("Emergency Funds", "#EF4444"),   # red-500
+    ("Food Fund", "#F59E0B"),         # amber-500
+]
+
 class SavingsAccount(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='savings_account', null=True, blank=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
@@ -20,6 +29,9 @@ class DailyLedger(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='daily_ledgers', null=True, blank=True)
     date = models.DateField(default=timezone.now)
     base_budget = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    # When True, auto-carry logic in the view will not overwrite base_budget for this date
+    # allowing manual changes such as savings withdrawal or reset to persist.
+    is_manual_override = models.BooleanField(default=False)
 
     def __str__(self):
         return self.date.strftime('%Y-%m-%d')
@@ -102,6 +114,19 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
+
+def ensure_default_categories_for_user(user):
+    """Create the project's default categories for a user if missing.
+
+    This is idempotent and safe to call on every request. It will only
+    create what does not already exist for the given user.
+    """
+    for title, color in DEFAULT_CATEGORY_DEFINITIONS:
+        try:
+            Category.objects.get_or_create(user=user, title=title, defaults={"color": color})
+        except Exception:
+            # In case of race condition during concurrent creation, continue
+            pass
 
 class Expense(models.Model):
     daily_ledger = models.ForeignKey(DailyLedger, on_delete=models.CASCADE, related_name='expenses')

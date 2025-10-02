@@ -5,6 +5,126 @@
 {% block content %}
 <div class="min-h-screen flex items-center justify-center px-4 py-8">
   <div class="w-full max-w-md space-y-8 animate-slide-in-up">
+    {# Patch Notes Modal - Discord-inspired Design #}
+    {% with current_patch_version='1.0.2' %}
+    {% if request.session.patch_notes_hidden_version != current_patch_version %}
+    <div id="patch-notes" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div class="w-full max-w-md rounded-2xl shadow-2xl animate-slide-in-up">
+        <div class="bg-gradient-to-r from-blue-500/40 via-purple-500/40 to-indigo-500/40 p-[1.5px] rounded-2xl">
+          <div class="bg-gray-900 rounded-2xl overflow-hidden" style="max-height: 85vh; min-height: 70vh; overflow-y: auto;">
+        <!-- Header with gradient accent -->
+        <div class="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-6 rounded-t-2xl">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shadow-lg">
+                  <i class="fas fa-sparkles text-white text-lg"></i>
+                </div>
+                <div>
+                  <h3 class="text-2xl font-bold text-white">What's New</h3>
+                  <p class="text-blue-100 text-sm font-medium">Version {{ current_patch_version }}</p>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="text-white/80 hover:text-white transition-all duration-200 hover:scale-110 flex-shrink-0" onclick="document.getElementById('patch-notes').classList.add('hidden')">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 space-y-6">
+          <!-- Improvements Section -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <i class="fas fa-arrow-up text-green-400 text-sm"></i>
+              </div>
+              <h4 class="text-lg font-semibold text-gray-100">Improvements</h4>
+            </div>
+            <div class="space-y-2 pl-10">
+              <div class="flex items-start gap-3 text-gray-300">
+                <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                <span>Added monthly summary with category percentages for better expense tracking</span>
+              </div>
+              <div class="flex items-start gap-3 text-gray-300">
+                <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                <span>Reset Budget now persists when navigating between dates</span>
+              </div>
+              <div class="flex items-start gap-3 text-gray-300">
+                <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                <span>Prebuilt categories (Savings, Emergency Funds, Food Fund) for faster expense entry</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Features Section -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                <i class="fas fa-star text-blue-400 text-sm"></i>
+              </div>
+              <h4 class="text-lg font-semibold text-gray-100">New Features</h4>
+            </div>
+            <div class="space-y-2 pl-10">
+              <div class="flex items-start gap-3 text-gray-300">
+                <i class="fas fa-plus-circle text-blue-400 mt-0.5"></i>
+                <span>Category breakdown visualization in daily view</span>
+              </div>
+              <div class="flex items-start gap-3 text-gray-300">
+                <i class="fas fa-plus-circle text-blue-400 mt-0.5"></i>
+                <span>Monthly summary page with detailed expense analytics</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bug Fixes Section -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                <i class="fas fa-wrench text-purple-400 text-sm"></i>
+              </div>
+              <h4 class="text-lg font-semibold text-gray-100">Bug Fixes</h4>
+            </div>
+            <div class="space-y-2 pl-10">
+              <div class="flex items-start gap-3 text-gray-300">
+                <i class="fas fa-bug text-purple-400 mt-0.5"></i>
+                <span>Fixed carryover logic for manual budget adjustments</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="bg-gray-900 px-6 py-4 flex justify-between items-center border-t border-gray-800">
+          <form method="post" action="{% url 'hide_patch_notes' %}">
+            {% csrf_token %}
+            <input type="hidden" name="version" value="{{ current_patch_version }}"/>
+            <button type="submit" class="text-sm text-gray-400 hover:text-gray-200 transition-all duration-200 flex items-center gap-2 hover:scale-105">
+              <i class="fas fa-eye-slash"></i>
+              Don't show this again
+            </button>
+          </form>
+          <button type="button" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl" onclick="document.getElementById('patch-notes').classList.add('hidden')">
+            Got it!
+          </button>
+        </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-out;
+      }
+    </style>
+    {% endif %}
+    {% endwith %}
     <!-- Centered Ledgerly Title -->
     <div class="text-center">
       <div class="mx-auto w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 shadow-lg">
