@@ -281,7 +281,7 @@ If you encounter any issues or have questions:
 
 - 🐛 [Open an Issue](https://github.com/Kazu00/ledgerly-web/issues)
 - 💡 [Start a Discussion](https://github.com/Kazu00/ledgerly-web/discussions)
-- 📧 Contact: [Your Email]
+- 📧 Contact: judiel.oppura19@gmail.com
 
 ---
 
