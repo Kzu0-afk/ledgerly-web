@@ -77,9 +77,11 @@ class DailyLedger(models.Model):
             return "Overspent" if self.total_expenses > Decimal('0.00') else "Underspent"
 
         usage = (self.total_expenses / self.base_budget) * Decimal('100')
-        if self.total_expenses > self.base_budget:
+        # Overspent: 100% or more of allocated budget
+        if self.total_expenses >= self.base_budget:
             return "Overspent"
-        if usage <= Decimal('90') and usage >= Decimal('50'):
+        # Balanced: 50% up to below 100% of allocated budget
+        if usage >= Decimal('50') and usage < Decimal('100'):
             return "Balanced"
         return "Underspent"
     
