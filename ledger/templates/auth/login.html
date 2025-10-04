@@ -6,7 +6,7 @@
 <div class="min-h-screen flex items-center justify-center px-4 py-8">
   <div class="w-full max-w-md space-y-8 animate-slide-in-up">
     {# Patch Notes Modal - Discord-inspired Design #}
-      {% with current_patch_version='1.0.3' %}
+      {% with current_patch_version='1.0.4' %}
     {% if request.session.patch_notes_hidden_version != current_patch_version %}
     <div id="patch-notes" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
       <div class="w-full max-w-md rounded-2xl shadow-2xl animate-slide-in-up">
@@ -45,15 +45,15 @@
             <div class="space-y-2 pl-10">
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
-                <span>Added monthly summary with category percentages for better expense tracking</span>
+                <span>Buy Me a Coffee button added across the site for developer support.</span>
               </div>
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
-                <span>Reset Budget now persists when navigating between dates</span>
+                <span>Button placement in navbar: between Login and Get Started for guests; before Logout for authenticated users.</span>
               </div>
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
-                <span>Prebuilt categories (Savings, Emergency Funds, Food Fund) for faster expense entry</span>
+                <span>Improved button styling for high contrast and alignment with existing nav buttons.</span>
               </div>
             </div>
           </div>
@@ -69,11 +69,7 @@
             <div class="space-y-2 pl-10">
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-plus-circle text-blue-400 mt-0.5"></i>
-                <span>Category breakdown visualization in daily view</span>
-              </div>
-              <div class="flex items-start gap-3 text-gray-300">
-                <i class="fas fa-plus-circle text-blue-400 mt-0.5"></i>
-                <span>Monthly summary page with detailed expense analytics</span>
+                <span>Environment-driven support link with secure defaults.</span>
               </div>
             </div>
           </div>
@@ -89,11 +85,7 @@
             <div class="space-y-2 pl-10">
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-bug text-purple-400 mt-0.5"></i>
-                <span>Fixed carryover logic for manual budget adjustments</span>
-              </div>
-              <div class="flex items-start gap-3 text-gray-300">
-                <i class="fas fa-bug text-purple-400 mt-0.5"></i>
-                <span>Corrected budget status thresholds: <strong>Underspent</strong> &lt; 50%, <strong>Balanced</strong> ≥ 50% and &lt; 100%, <strong>Overspent</strong> ≥ 100% of daily budget.</span>
+                <span>Resolved visibility issues on login/register by moving and styling the support button within the top navbar.</span>
               </div>
             </div>
           </div>
