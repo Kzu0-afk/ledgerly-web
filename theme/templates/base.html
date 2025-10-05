@@ -195,7 +195,7 @@
                     <a href="/" class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-purple-600 hover:to-blue-600 transition-all duration-300">
                         Ledgerly
                     </a>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">ver. 1.0.4</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">ver. 1.0.5</p>
                 </div>
             </div>
             <div class="flex items-center gap-4">
@@ -253,6 +253,21 @@
     {# Floating BMC button removed; button is now in the top navigation #}
 
     <script>
+        // Ensure Delete Account button is visibly red even if Tailwind purges classes
+        (function enforceDangerButton(){
+            function paint(){
+                document.querySelectorAll('.delete-account-btn').forEach(function(btn){
+                    btn.style.backgroundColor = '#dc2626'; // red-600
+                    btn.addEventListener('mouseenter', function(){ btn.style.backgroundColor = '#b91c1c'; }); // red-700
+                    btn.addEventListener('mouseleave', function(){ btn.style.backgroundColor = '#dc2626'; });
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', paint);
+            } else {
+                paint();
+            }
+        })();
         // Force dark theme as default and remove toggle logic
         (function enforceDark() {
             const html = document.documentElement;

@@ -6,7 +6,7 @@
 <div class="min-h-screen flex items-center justify-center px-4 py-8">
   <div class="w-full max-w-md space-y-8 animate-slide-in-up">
     {# Patch Notes Modal - Discord-inspired Design #}
-      {% with current_patch_version='1.0.4' %}
+  {% with current_patch_version='1.0.5' %}
     {% if request.session.patch_notes_hidden_version != current_patch_version %}
     <div id="patch-notes" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
       <div class="w-full max-w-md rounded-2xl shadow-2xl animate-slide-in-up">
@@ -45,15 +45,15 @@
             <div class="space-y-2 pl-10">
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
-                <span>Buy Me a Coffee button added across the site for developer support.</span>
+                <span>Settings layout refined: Change Password and Danger Zone sit under Profile in a two-column row.</span>
               </div>
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
-                <span>Button placement in navbar: between Login and Get Started for guests; before Logout for authenticated users.</span>
+                <span>Unified card borders for consistent appearance across sections.</span>
               </div>
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
-                <span>Improved button styling for high contrast and alignment with existing nav buttons.</span>
+                <span>Delete Account button now uses a solid red style for clear intent.</span>
               </div>
             </div>
           </div>
@@ -68,8 +68,12 @@
             </div>
             <div class="space-y-2 pl-10">
               <div class="flex items-start gap-3 text-gray-300">
+                <i class="fas a-plus-circle text-blue-400 mt-0.5"></i>
+                <span>General Settings page: update profile, change password, and delete account.</span>
+              </div>
+              <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-plus-circle text-blue-400 mt-0.5"></i>
-                <span>Environment-driven support link with secure defaults.</span>
+                <span>“Settings” link added to the navbar for authenticated users.</span>
               </div>
             </div>
           </div>
@@ -85,7 +89,7 @@
             <div class="space-y-2 pl-10">
               <div class="flex items-start gap-3 text-gray-300">
                 <i class="fas fa-bug text-purple-400 mt-0.5"></i>
-                <span>Resolved visibility issues on login/register by moving and styling the support button within the top navbar.</span>
+                <span>Minor UI consistency fixes in settings cards and actions.</span>
               </div>
             </div>
           </div>
