@@ -8,7 +8,9 @@ from datetime import date, timedelta
 from .utils import LedgerHTMLCalendar, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
-from .forms import RegistrationForm
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from .forms import RegistrationForm, ProfileUpdateForm, AccountDeletionForm
 from django.db.models import Sum
 from django.contrib import messages
 from django.db.models import Sum
@@ -462,3 +464,62 @@ def register(request):
     else:
         form = RegistrationForm()
     return render(request, 'auth/register.html', {'form': form})
+
+
+@login_required(login_url='login')
+def user_settings(request):
+    """General Settings page: profile update, password change, and account deletion.
+
+    - Profile updates use ProfileUpdateForm with uniqueness validation.
+    - Password changes use Django's PasswordChangeForm and keep session valid.
+    - Account deletion requires confirmation phrase and current password check.
+    """
+    profile_form = ProfileUpdateForm(instance=request.user)
+    password_form = PasswordChangeForm(user=request.user)
+    deletion_form = AccountDeletionForm()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update_profile':
+            profile_form = ProfileUpdateForm(request.POST, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Profile updated successfully.')
+                return redirect('user_settings')
+            else:
+                messages.error(request, 'Please correct the errors in your profile form.')
+
+        elif action == 'change_password':
+            password_form = PasswordChangeForm(user=request.user, data=request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                # Keep the user logged in
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Password changed successfully.')
+                return redirect('user_settings')
+            else:
+                messages.error(request, 'Please correct the errors in your password form.')
+
+        elif action == 'delete_account':
+            deletion_form = AccountDeletionForm(request.POST)
+            if deletion_form.is_valid():
+                # Verify password
+                password = deletion_form.cleaned_data['password']
+                if not request.user.check_password(password):
+                    deletion_form.add_error('password', 'Incorrect password.')
+                else:
+                    # Cascade delete user data via on_delete=CASCADE in models
+                    username = request.user.username
+                    request.user.delete()
+                    messages.success(request, f"Account '{username}' has been deleted.")
+                    return redirect('login')
+            else:
+                messages.error(request, 'Please confirm deletion by typing DELETE and entering your password.')
+
+    context = {
+        'profile_form': profile_form,
+        'password_form': password_form,
+        'deletion_form': deletion_form,
+    }
+    return render(request, 'auth/settings.html', context)
