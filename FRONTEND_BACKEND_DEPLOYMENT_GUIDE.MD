@@ -16,6 +16,14 @@ This guide walks you through deploying a Django backend (Railway + PostgreSQL) a
 4. Connect Frontend and Backend
 5. Optional Enhancements
 6. Troubleshooting
+7. Ads Integration (Next.js + Django)
+   - 7.1 Overview and prerequisites
+   - 7.2 Consent Management Platform (CMP)
+   - 7.3 Security headers and CSP (Django)
+   - 7.4 ads.txt publication
+   - 7.5 Next.js AdSlot skeleton (lazy, CLS-safe)
+   - 7.6 Anti-DDoS and logging minimization
+   - 7.7 Verification checklist
 
 ---
 
@@ -299,3 +307,157 @@ NEXT_PUBLIC_API_URL=https://<your-railway-service>.up.railway.app
 By following these steps, you’ll have a production-ready Django backend on Railway and a frontend on Vercel, with proper CORS/CSRF, static file handling, and a clean deployment workflow.
 
 
+
+## 7) Ads Integration (Next.js + Django)
+
+This section summarizes the concrete steps to integrate ads safely and professionally. For strategy, networks, and rollout phases, see `ADS_PLANNING_AND_IMPLEMENTATION.MD`.
+
+### 7.1 Overview and prerequisites
+
+- Decide initial path: managed network (e.g., Media.net/Ezoic) or developer-friendly (Carbon/EthicalAds) based on your niche and traffic.
+- Implement a compliant CMP before any ad or bidding scripts.
+- Reserve visual space for each ad placement to avoid layout shifts.
+- Keep a future path open for header bidding (Prebid.js) and/or direct sponsorships.
+
+### 7.2 Consent Management Platform (CMP)
+
+- Use a TCF v2 compliant CMP (e.g., OneTrust/Sourcepoint/Cookiebot) configured to render before ad initialization.
+- Frontend should gate ad initialization on consent signals.
+- Recommended env flag in Vercel: `NEXT_PUBLIC_ENABLE_ADS=true` and a boolean in app state enabling ads only when consent is present.
+
+### 7.3 Security headers and CSP (Django)
+
+Install `django-csp` and add the middleware near the top (after `SecurityMiddleware`). Keep allowlists minimal and vendor-specific.
+
+```bash
+pip install django-csp
+```
+
+In `config/settings.py`:
+
+```python
+# Add CSP middleware (order matters)
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "csp.middleware.CSPMiddleware",
+    # ... the rest of your middleware ...
+]
+
+# Strict defaults; explicitly allow vendors you contract with
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)  # add vendor script hosts here when approved
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")  # consider nonce/hash instead of unsafe-inline
+CSP_FRAME_SRC = ("'self'",)  # add ad server/frame hosts as needed
+CSP_CONNECT_SRC = ("'self'",)  # add bidder endpoints as needed
+
+# Keep existing transport security from Section 2.1 (HSTS, SECURE_* settings)
+```
+
+Notes:
+
+- Only add specific vendor domains you actually use; keep lists short.
+- Maintain category blocklists and vendor reviews at the ad server or network level.
+
+### 7.4 ads.txt publication
+
+Publish `ads.txt` at the root of your primary domain (`/ads.txt`). Options:
+
+- CDN/edge: Upload `ads.txt` at the CDN root and cache.
+- Django route: Serve a file from disk at `/ads.txt`.
+
+Example (Django `config/urls.py`):
+
+```python
+from django.http import FileResponse, Http404
+from django.urls import path
+from django.conf import settings
+import os
+
+def ads_txt(_request):
+    path = os.path.join(settings.BASE_DIR, "ads.txt")
+    if not os.path.exists(path):
+        raise Http404("ads.txt not found")
+    return FileResponse(open(path, "rb"), content_type="text/plain")
+
+urlpatterns = [
+    # ... your URLs ...
+    path("ads.txt", ads_txt),
+]
+```
+
+Place your real `ads.txt` file at the project root. Do not include mock entries.
+
+### 7.5 Next.js AdSlot skeleton (lazy, CLS-safe)
+
+Create a reusable component that reserves space and initializes ads only after consent and when visible. This example shows the shape without wiring a specific network.
+
+```tsx
+// AdSlot.tsx
+import React, { useEffect, useRef } from "react";
+
+type AdSlotProps = {
+  slotId: string;
+  width: number;
+  height: number;
+  onVisible?: (el: HTMLElement) => void; // initialize vendor when visible and consented
+};
+
+export function AdSlot({ slotId, width, height, onVisible }: AdSlotProps) {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (typeof onVisible === "function") onVisible(el);
+          observer.disconnect();
+        }
+      });
+    }, { rootMargin: "200px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [onVisible]);
+
+  return (
+    <div
+      id={slotId}
+      ref={ref}
+      style={{ width, height }}
+      aria-label="advertisement"
+      role="complementary"
+    />
+  );
+}
+```
+
+Usage idea in a page or layout (gate by consent and a feature flag):
+
+```tsx
+// Example usage (pseudo)
+// const consent = useConsent();
+// const adsEnabled = process.env.NEXT_PUBLIC_ENABLE_ADS === "true";
+// {consent.ads && adsEnabled && (
+//   <AdSlot slotId="top-of-content" width={728} height={90} onVisible={(el) => {
+//     // initialize your chosen network here
+//   }} />
+// )}
+```
+
+### 7.6 Anti-DDoS and logging minimization
+
+- Prefer direct client→vendor requests; avoid proxying ad requests through Django.
+- If you later add proxy/reporting endpoints, protect them with CDN/WAF and per-IP rate limits (e.g., `django-ratelimit`).
+- Log only operational metrics necessary for health and fraud detection; avoid storing PII; set short retention.
+
+### 7.7 Verification checklist
+
+- CMP loads before any ad/vendor script and consent is enforced.
+- CSP allowlists are minimal and specific to contracted vendors.
+- Ad slots reserve fixed sizes; no unexpected CLS in Lighthouse.
+- `ads.txt` resolves at `https://your-domain.com/ads.txt` and validates.
+- Feature flag controls rollout (`NEXT_PUBLIC_ENABLE_ADS`).
+- Web Vitals and error budgets unaffected beyond agreed thresholds.
